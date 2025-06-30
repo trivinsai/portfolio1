@@ -1,7 +1,8 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
+import { HiOutlineMenu, HiOutlineX } from "react-icons/hi"
+import { motion, AnimatePresence } from "framer-motion"
 
 const navItems = [
   { name: "Home", href: "#hero" },
@@ -12,6 +13,7 @@ const navItems = [
 ]
 
 export default function Navigation() {
+  const [menuOpen, setMenuOpen] = useState(false)
   const [activeSection, setActiveSection] = useState("hero")
 
   useEffect(() => {
@@ -37,38 +39,72 @@ export default function Navigation() {
 
   const scrollToSection = (href: string) => {
     const element = document.querySelector(href)
-    element?.scrollIntoView({ behavior: "smooth" })
+    if (element) {
+      element.scrollIntoView({ behavior: "smooth" })
+      setMenuOpen(false)
+    }
   }
 
   return (
-    <motion.nav
-      initial={{ y: -100 }}
-      animate={{ y: 0 }}
-      className="fixed top-4 left-1/2 transform -translate-x-1/2 z-40"
-    >
-      <div className="bg-black/20 backdrop-blur-md border border-white/10 rounded-full px-6 py-3">
-        <ul className="flex space-x-8">
+    <header className="fixed top-0 left-0 w-full z-50 bg-black/50 backdrop-blur-md">
+      <div className="flex items-center justify-between px-6 py-4 max-w-7xl mx-auto">
+        {/* Logo */}
+        <h1 className="text-white font-bold text-xl">DevSphere</h1>
+
+        {/* Desktop Nav */}
+        <nav className="hidden md:flex space-x-6">
           {navItems.map((item) => (
-            <li key={item.name}>
+            <button
+              key={item.name}
+              onClick={() => scrollToSection(item.href)}
+              className={`text-sm font-medium transition ${
+                activeSection === item.href.substring(1)
+                  ? "text-purple-400"
+                  : "text-gray-300 hover:text-white"
+              }`}
+            >
+              {item.name}
+            </button>
+          ))}
+        </nav>
+
+        {/* Hamburger */}
+        <div className="md:hidden">
+          <button
+            onClick={() => setMenuOpen(!menuOpen)}
+            className="text-white p-2 rounded-md hover:bg-white/10 transition"
+            aria-label="Toggle Menu"
+          >
+            {menuOpen ? <HiOutlineX size={28} /> : <HiOutlineMenu size={28} />}
+          </button>
+        </div>
+      </div>
+
+      {/* Mobile Menu */}
+      <AnimatePresence>
+        {menuOpen && (
+          <motion.div
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            exit={{ y: -20, opacity: 0 }}
+            className="md:hidden bg-black/90 backdrop-blur-md px-6 py-8 space-y-6 text-center"
+          >
+            {navItems.map((item) => (
               <button
+                key={item.name}
                 onClick={() => scrollToSection(item.href)}
-                className={`relative px-3 py-2 text-sm font-medium transition-colors duration-300 ${
-                  activeSection === item.href.substring(1) ? "text-purple-400" : "text-gray-300 hover:text-white"
+                className={`block w-full text-lg font-medium transition ${
+                  activeSection === item.href.substring(1)
+                    ? "text-purple-400"
+                    : "text-gray-200 hover:text-white"
                 }`}
               >
                 {item.name}
-                {activeSection === item.href.substring(1) && (
-                  <motion.div
-                    layoutId="activeSection"
-                    className="absolute inset-0 bg-purple-500/20 rounded-full"
-                    transition={{ type: "spring", stiffness: 380, damping: 30 }}
-                  />
-                )}
               </button>
-            </li>
-          ))}
-        </ul>
-      </div>
-    </motion.nav>
+            ))}
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </header>
   )
 }
